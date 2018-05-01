@@ -22,31 +22,31 @@ def calculate_Nuclear_Potential(PySCF_molecule, point_xyz):
     return Nuclear_Potential
 
 
-def calculate_ESP(surface_points, molecule_xyz_file, basis_set, density_matrix):
+def calculate_ESP(surface_points, molecule_xyz, basis_set, density_matrix, charge=0):
     """
     Calculated the electronic and nuclear ESP in a set of points.
     
     Input : surface_points, the points for which the ESP is evaluated in au.
-          : molecule_xyz_file, path to xyz-file of molecule in angstrom.
+          : molecule_xyz, xyz of molecule in angstrom. In the format [atom, x, y, z] all string.
           : basis_set, basis set used to construct density matrix.
           : density matrix.
+          : charge, charge of molecule
           
     Output : surface_ESP, array of ESP values [ESP_value, x, y, z]
     """
     surface_ESP = np.zeros((len(surface_points),4))
     surface_ESP[:,1:] = surface_points
-    molecule_xyz = open(molecule_xyz_file, "r").readlines()
     
     molecule = []
     atoms = ''
-    for i in range(2, len(molecule_xyz)):
-        atom = molecule_xyz[i].split()
-        molecule.append([atom[0],(float(atom[1]),float(atom[2]),float(atom[3]))])
-        atoms = atoms+atom[0]
+    for i in range(0, len(molecule_xyz)):
+        molecule.append([molecule_xyz[i][0],(float(molecule_xyz[i][1]),float(molecule_xyz[i][2]),float(molecule_xyz[i][3]))])
+        atoms = atoms+molecule_xyz[i][0]
     
     mol = gto.Mole()
     mol.atom = molecule
     mol.basis = basis_set
+    mol.charge = charge
     mol.build()
     
     for i in range(0, len(surface_ESP)):
