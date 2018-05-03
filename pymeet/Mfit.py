@@ -2,6 +2,7 @@ import numpy as np
 from pymeet.VectorConstructor import *
 from pymeet.ESP import calculate_ESP
 from pymeet.COM import calc_center_of_mass
+from pymeet.Multipoles import Multipoles
 
 
 class Mfit():
@@ -9,7 +10,7 @@ class Mfit():
         """
         Main part of PyMEET.
         Fits multipole moments to QM calculated ESPs.
-        
+
         Input : molecule, xyz of molecule in angstrom. In the format [atom, x, y, z] all string.
               : surface, point for where the ESP is to be calculated.
               : basis_set, basis set to be used.
@@ -17,15 +18,15 @@ class Mfit():
               : multipole_order, maximum order of multipoles to be fitted. Default = 2.
               : charge_constraint, total charge of the molecule. Default = None.
               : dipole_constraint, molecular dipole molement given as [mu_x, mu_y, mu_z]. Default = None.
-              : precalculated_ESP, specify precalculated ESP here. [value, x, y, z]. 
-                                   the x, y, z should be identical to that of surface. 
+              : precalculated_ESP, specify precalculated ESP here. [value, x, y, z].
+                                   the x, y, z should be identical to that of surface.
               : no_nuclear_esp, True or False. Speficfiy if nuclear contribution should be used in ESP calculation.
                                 Default is False.
-              
+
         Output : call self.fit_multipoles()
-        
+
         If parameters are changed call self.construct_A_and_B() to reconstruct needed matrix and vector.
-        
+
         TODO : Remove use_precalculated_ESP, specifing precalculated_ESP should be enough.
              : Maybe change solver to SVD? All tests should pass when changing this
              : Be 100 % sure about pre-factors on quadropoles.
@@ -44,7 +45,9 @@ class Mfit():
         self.density_matrix = density_matrix
         self.precalculated_ESP = precalculated_ESP
         self.no_nuclear_esp = no_nuclear_esp
-        
+
+        self.problem_size_constraints = 0
+
         self.Center_of_Mass = calc_center_of_mass(self.elements, self.molecule_coords)
         self.construct_A_and_B()
 
@@ -60,17 +63,17 @@ class Mfit():
         else:
             print("Cannot go further than multipole order two")
             quit()
-    
+
         problem_size_constraints = 0
         if self.charge_constraint != None:
             problem_size_constraints += 1
         if self.dipole_constraint[0] != "None":
             problem_size_constraints += 3
-        
+
         self.A_vector = np.zeros((problem_size,len(self.surface_points)))
         self.A_matrix = np.zeros((problem_size+problem_size_constraints,problem_size+problem_size_constraints))
         self.B_vector = np.zeros(problem_size+problem_size_constraints)
-        
+
         if self.precalculated_ESP[0,0] != "None":
             self.ESP_values = self.precalculated_ESP
         else:
@@ -78,7 +81,8 @@ class Mfit():
                 self.ESP_values = calculate_ESP(self.surface_points, self.molecule_xyz, self.basis_set, self.density_matrix, charge=self.charge_constraint, omit_nuclear_contribution=self.no_nuclear_esp)
             else:
                 self.ESP_values = calculate_ESP(self.surface_points, self.molecule_xyz, self.basis_set, self.density_matrix, omit_nuclear_contribution=self.no_nuclear_esp)
-            
+
+        self.problem_size_constraints = problem_size_constraints
         # Construct A and B vector
         counter = 0
         if self.multipole_order >= 0:
@@ -120,7 +124,7 @@ class Mfit():
             self.A_vector[counter*self.number_atoms:(counter+1)*self.number_atoms,:] = theta_vector_A[5]
             self.B_vector[counter*self.number_atoms:(counter+1)*self.number_atoms] = theta_vector_B[5]
             counter += 1
-        
+
         # Construct A matrix and B vector with constraints
         self.A_matrix[0:problem_size,0:problem_size] = np.dot(self.A_vector,np.transpose(self.A_vector))
         counter = 0
@@ -151,13 +155,33 @@ class Mfit():
             self.A_matrix[problem_size+counter:problem_size+counter+1,self.number_atoms*3:self.number_atoms*4] = self.A_matrix[self.number_atoms*3:self.number_atoms*4,problem_size+counter:problem_size+counter+1] = 1
             self.B_vector[problem_size+counter:problem_size+counter+1] = self.dipole_constraint[2]
             counter += 1
-            
-            
+
+
     def fit_multipoles(self):
         self.fitted_moments = np.linalg.solve(self.A_matrix, self.B_vector)
-        return self.fitted_moments
-       
-        
+
+
+    def get_fitted_multipoles(self):
+        moments_only = self.fitted_moments[:-self.problem_size_constraints]
+        mul = None
+        # ordering of moments is Fortran-like, i.e. [x, x, x] ,[y, y, y] ...
+        # instead of [x, y, z], [x, y, z]
+        if self.multipole_order == 0:
+            M0 = moments_only.reshape(self.number_atoms,1)
+            mul = Multipoles(self.number_atoms, max_k=0, M0=M0)
+        elif self.multipole_order == 1:
+            M0 = moments_only[:self.number_atoms].reshape(self.number_atoms,1)
+            M1 = moments_only[self.number_atoms:].reshape((self.number_atoms,3), order='F')
+            mul = Multipoles(self.number_atoms, max_k=1, M0=M0, M1=M1)
+        elif self.multipole_order == 2:
+            M0 = moments_only[:self.number_atoms].reshape(self.number_atoms,1)
+            M1 = moments_only[self.number_atoms:self.number_atoms*4].reshape((self.number_atoms,3), order='F')
+            M2 = moments_only[self.number_atoms*4:].reshape((self.number_atoms,6), order='F')
+            mul = Multipoles(self.number_atoms, max_k=2, M0=M0, M1=M1, M2=M2)
+        return mul
+
+
+
     def get_RMSD(self):
         RMSD = 0
         for i in range(0, len(self.surface_points)):
