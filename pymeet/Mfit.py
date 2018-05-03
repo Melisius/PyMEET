@@ -5,7 +5,7 @@ from pymeet.COM import calc_center_of_mass
 
 
 class Mfit():
-    def __init__(self, molecule, surface, basis_set, density_matrix, multipole_order=2, charge_constraint=None, dipole_constraint=np.array(["None"]), precalculated_ESP=np.array([["None"]])):
+    def __init__(self, molecule, surface, basis_set, density_matrix, multipole_order=2, charge_constraint=None, dipole_constraint=np.array(["None"]), precalculated_ESP=np.array([["None"]]), no_nuclear_esp=False):
         """
         Main part of PyMEET.
         Fits multipole moments to QM calculated ESPs.
@@ -19,6 +19,8 @@ class Mfit():
               : dipole_constraint, molecular dipole molement given as [mu_x, mu_y, mu_z]. Default = None.
               : precalculated_ESP, specify precalculated ESP here. [value, x, y, z]. 
                                    the x, y, z should be identical to that of surface. 
+              : no_nuclear_esp, True or False. Speficfiy if nuclear contribution should be used in ESP calculation.
+                                Default is False.
               
         Output : call self.fit_multipoles()
         
@@ -41,6 +43,7 @@ class Mfit():
         self.basis_set = basis_set
         self.density_matrix = density_matrix
         self.precalculated_ESP = precalculated_ESP
+        self.no_nuclear_esp = no_nuclear_esp
         
         self.Center_of_Mass = calc_center_of_mass(self.elements, self.molecule_coords)
         self.construct_A_and_B()
@@ -72,9 +75,9 @@ class Mfit():
             self.ESP_values = self.precalculated_ESP
         else:
             if self.charge_constraint != None:
-                self.ESP_values = calculate_ESP(self.surface_points, self.molecule_xyz, self.basis_set, self.density_matrix, charge=self.charge_constraint)
+                self.ESP_values = calculate_ESP(self.surface_points, self.molecule_xyz, self.basis_set, self.density_matrix, charge=self.charge_constraint, omit_nuclear_contribution=self.no_nuclear_esp)
             else:
-                self.ESP_values = calculate_ESP(self.surface_points, self.molecule_xyz, self.basis_set, self.density_matrix)
+                self.ESP_values = calculate_ESP(self.surface_points, self.molecule_xyz, self.basis_set, self.density_matrix, omit_nuclear_contribution=self.no_nuclear_esp)
             
         # Construct A and B vector
         counter = 0

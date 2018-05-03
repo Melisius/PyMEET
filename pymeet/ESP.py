@@ -22,7 +22,7 @@ def calculate_Nuclear_Potential(PySCF_molecule, point_xyz):
     return Nuclear_Potential
 
 
-def calculate_ESP(surface_points, molecule_xyz, basis_set, density_matrix, charge=0):
+def calculate_ESP(surface_points, molecule_xyz, basis_set, density_matrix, charge=0, omit_nuclear_contribution=False):
     """
     Calculated the electronic and nuclear ESP in a set of points.
     
@@ -31,6 +31,7 @@ def calculate_ESP(surface_points, molecule_xyz, basis_set, density_matrix, charg
           : basis_set, basis set used to construct density matrix.
           : density matrix.
           : charge, charge of molecule
+          : omit_nuclear_contribution, set to True, to not add nuclear contribution to ESP.
           
     Output : surface_ESP, array of ESP values [ESP_value, x, y, z]
     """
@@ -54,6 +55,9 @@ def calculate_ESP(surface_points, molecule_xyz, basis_set, density_matrix, charg
         rinv_integral = mol.intor("int1e_rinv_sph")
         Electronic_ESP = np.einsum("jk,jk->", density_matrix, rinv_integral)
         Nuclear_ESP = calculate_Nuclear_Potential(mol, surface_ESP[i,1:])
-        surface_ESP[i,0] = Nuclear_ESP - Electronic_ESP
+        surface_ESP[i,0] = -Electronic_ESP
+        if omit_nuclear_contribution == False:
+            Nuclear_ESP = calculate_Nuclear_Potential(mol, surface_ESP[i,1:])
+            surface_ESP[i,0] += Nuclear_ESP 
         
     return surface_ESP
