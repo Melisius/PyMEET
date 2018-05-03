@@ -54,6 +54,6 @@ def calculate_ESP(surface_points, molecule_xyz, basis_set, density_matrix, charg
         rinv_integral = mol.intor("int1e_rinv_sph")
         Electronic_ESP = np.einsum("jk,jk->", density_matrix, rinv_integral)
         Nuclear_ESP = calculate_Nuclear_Potential(mol, surface_ESP[i,1:])
-        surface_ESP[i,0] = Nuclear_ESP - 2*Electronic_ESP
+        surface_ESP[i,0] = Nuclear_ESP - Electronic_ESP
         
     return surface_ESP
