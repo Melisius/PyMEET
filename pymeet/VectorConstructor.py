@@ -17,9 +17,9 @@ def Vector_mu_A(molecule_coords, point_coords, ESP):
     for j in range(len(molecule_coords)):
         for i in range(len(point_coords)):
             R = molecule_coords[j,:] - point_coords[i,:]
-            Vector_out[0,j,i] += R[0]/(np.dot(R,R)**0.5)**3
-            Vector_out[1,j,i] += R[1]/(np.dot(R,R)**0.5)**3
-            Vector_out[2,j,i] += R[2]/(np.dot(R,R)**0.5)**3
+            Vector_out[0,j,i] += -R[0]/(np.dot(R,R)**0.5)**3
+            Vector_out[1,j,i] += -R[1]/(np.dot(R,R)**0.5)**3
+            Vector_out[2,j,i] += -R[2]/(np.dot(R,R)**0.5)**3
     return Vector_out
     
     
@@ -54,9 +54,9 @@ def Vector_mu_B(molecule_coords, point_coords, ESP):
     for j in range(len(molecule_coords)):
         for i in range(len(point_coords)):
             R = molecule_coords[j,:] - point_coords[i,:]
-            Vector_out[0,j] += ESP[i,0]*R[0]/(np.dot(R,R)**0.5)**3
-            Vector_out[1,j] += ESP[i,0]*R[1]/(np.dot(R,R)**0.5)**3
-            Vector_out[2,j] += ESP[i,0]*R[2]/(np.dot(R,R)**0.5)**3
+            Vector_out[0,j] += -ESP[i,0]*R[0]/(np.dot(R,R)**0.5)**3
+            Vector_out[1,j] += -ESP[i,0]*R[1]/(np.dot(R,R)**0.5)**3
+            Vector_out[2,j] += -ESP[i,0]*R[2]/(np.dot(R,R)**0.5)**3
     return Vector_out
     
     

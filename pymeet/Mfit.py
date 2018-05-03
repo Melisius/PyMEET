@@ -167,9 +167,9 @@ class Mfit():
                     R = self.molecule_coords[j,:] - self.surface_points[i,:]
                     E += self.fitted_moments[j]/np.dot(R,R)**0.5
                 if self.multipole_order >= 1:
-                    E += self.fitted_moments[j+len(self.molecule_coords)]*R[0]/(np.dot(R,R)**0.5)**3
-                    E += self.fitted_moments[j+len(self.molecule_coords)*2]*R[1]/(np.dot(R,R)**0.5)**3
-                    E += self.fitted_moments[j+len(self.molecule_coords)*3]*R[2]/(np.dot(R,R)**0.5)**3
+                    E += -self.fitted_moments[j+len(self.molecule_coords)]*R[0]/(np.dot(R,R)**0.5)**3
+                    E += -self.fitted_moments[j+len(self.molecule_coords)*2]*R[1]/(np.dot(R,R)**0.5)**3
+                    E += -self.fitted_moments[j+len(self.molecule_coords)*3]*R[2]/(np.dot(R,R)**0.5)**3
                 if self.multipole_order >= 2:
                     E += 0.5*self.fitted_moments[j+len(self.molecule_coords)*4]*R[0]*R[0]/(np.dot(R,R)**0.5)**5
                     E += 0.5*self.fitted_moments[j+len(self.molecule_coords)*5]*R[0]*R[1]/(np.dot(R,R)**0.5)**5
