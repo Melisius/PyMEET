@@ -163,6 +163,8 @@ class Mfit():
 
     def get_fitted_multipoles(self):
         moments_only = self.fitted_moments[:-self.problem_size_constraints]
+        if self.problem_size_constraints == 0:
+            moments_only = self.fitted_moments
         mul = None
         # ordering of moments is Fortran-like, i.e. [x, x, x] ,[y, y, y] ...
         # instead of [x, y, z], [x, y, z]

@@ -48,6 +48,9 @@ class Chromophore:
         self.multipoles_per_state = []
         self.potentials_per_state = []
 
+        self.fields_per_state = []
+        self.ind_moments_per_state = []
+
     def make_potentials(self):
         """
         Creates pepytools.Potential objects for every state

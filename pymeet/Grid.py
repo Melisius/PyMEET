@@ -53,7 +53,6 @@ def compute_vdW_surface(atomic_charges, coordinates, surface_point_density=2.0, 
     chkrm       = (checkremove) used to keep track in index when
                   removing points
     """
-    print(coordinates)
     natoms = coordinates.shape[0]
     points = np.zeros(natoms, dtype=np.int64)
     for i in range(natoms):
@@ -115,7 +114,6 @@ def compute_grid(molecule, rmin=1.4, rmax=2.0, pointdensity=1.0, nsurfaces=2):
     radii = np.linspace(rmin, rmax, nsurfaces)
     surfaces = []
     atomic_charges = [name2number[el] for el in molecule[:,0]]
-    print(atomic_charges)
     # conversion to A.U.
     coordinates = 1.889725989 * np.array(molecule[:,1:], dtype=np.float64)
     for r in radii:
