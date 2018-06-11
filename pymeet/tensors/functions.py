@@ -1,5 +1,6 @@
 import numpy as np
 from numba import jit
+import itertools
 
 """Contains various helper functions"""
 #if we want to go higher than this (unlikely) we have to change dtype from int to float (overflow)
