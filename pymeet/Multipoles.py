@@ -1,4 +1,3 @@
-import numpy as np
 
 class Multipoles:
     def __init__(self, n_atoms, max_k, M0=None, M1=None, M2=None):
@@ -7,3 +6,4 @@ class Multipoles:
         self.M2 = M2
         self.max_k = max_k
         self.n_atoms = n_atoms
+        self.Mlist = [M0, M1, M2]
