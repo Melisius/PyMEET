@@ -1,7 +1,7 @@
 import numpy as np
 from numba import jit
-from .decorators import memorize
 
+"""Contains various helper functions"""
 #if we want to go higher than this (unlikely) we have to change dtype from int to float (overflow)
 TABLE_SIZE = 20
 
@@ -25,14 +25,11 @@ for i in range(TABLE_SIZE):
     double_factorial[i] = fdouble_factorial(i)
 
 
-
-
-def detrace(tensor):
-    dim = len(tensor.shape)
-    tensor[np.diag_indices(dim)] -= tensor.trace() / dim
-    return tensor
-
-
-def dt2(x):
-    r = np.einsum("ij...,...->ij...", np.eye(3), x.trace()/3)
-    return x - r
+def fill(values, dim):
+    out = np.zeros([3]*dim)
+    counter = 0
+    for c in itertools.combinations_with_replacement((0,1,2), dim):
+        for index in list(set(itertools.permutations(c))):
+            out[index] = values[counter]
+        counter += 1
+    return out
