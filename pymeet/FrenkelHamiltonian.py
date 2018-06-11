@@ -1,7 +1,7 @@
 import itertools
 from string import ascii_lowercase as abc
 
-from pymeet.tensors import tensors_batched
+from pymeet.tensors import tensors
 from pymeet.tensors import functions
 import numpy as np
 
@@ -10,20 +10,13 @@ angstrom_to_au = 1.889725989
 
 def compute_interaction_energy(k, l, mul1, mul2, r12):
     rank = k + l
-    Tkl = tensors_batched.T[rank](r12, 0)
-
-#     print(mul1.shape, mul2.shape, Tkl.shape)
-
-    if k == 0:
-        mul1 = mul1[0]
-    if l == 0:
-        mul2 = mul2[0]
-    Tkl = Tkl[0]
-
+    Tkl = tensors.T[rank](*r12)
+    #expand compressed tensors to full shape: tuple([3]*ndim))
+    mul1_tensor = functions.fill(mul1, k)
+    mul2_tensor = functions.fill(mul2, l)
     factor = (-1)**rank / functions.factorial[rank]
-    signature = '{},{},{}->'.format(abc[:k], abc[:k + l], abc[k:k + l])
-#     print(signature)
-    res = factor * np.einsum(signature, mul1, Tkl, mul2)
+    signature = '{},{},{}->'.format(abc[:k],abc[:k+l], abc[k:k+l])
+    res = factor * np.einsum(signature, mul1_tensor, Tkl, mul2_tensor)
     return res
 
 
